@@ -5,7 +5,7 @@ The goal is for me to learn about programming in Rust so the code may not be opt
 
 ### Current project capabilities
 
-- Accept 0 to 31 as minterms
+- Accept 0 to 255 as minterms
 - Produce all the tables containing every combination possible by the rule of the method, free of duplicate.
 - Indicate if a combination has been used in a further table
 
@@ -14,7 +14,6 @@ The goal is for me to learn about programming in Rust so the code may not be opt
 - Finish the Analysis phase with the extraction of prime implicants
 - Do the synthesis phase
 - Open a prompt to ask about the minterms we want (no need to change it in the code)
-- Try to optimise / remove duplicate code (like every table structure impl)
 - print result in a file
 
 ### Disclaimer
