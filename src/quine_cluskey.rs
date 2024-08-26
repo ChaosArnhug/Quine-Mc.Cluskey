@@ -18,6 +18,7 @@ Hashmap => the group tables, group_table_u8
 pub struct QuineCluskey {
     pub minterms: Vec<u8>,
     pub tables: HashMap<u8, HashMap<u8, RefCell<Vec<(bool, String, Vec<u8>)>>>>,
+    pub prime_implicants: Vec<(String, String, Vec<u8>)>,
     nb_bits_needed: u8,
 }
 
@@ -34,6 +35,7 @@ impl QuineCluskey {
 
         default_structure.set_max_bit();
         default_structure.generate_tables();
+        default_structure.get_prime_implicants();
 
         return default_structure;
     }
@@ -128,11 +130,44 @@ impl QuineCluskey {
         return bin_result;
     }
 
-    pub fn remove_duplicate_tuples(tuples: &mut Vec<(bool, String, Vec<u8>)>){
+    fn remove_duplicate_tuples(tuples: &mut Vec<(bool, String, Vec<u8>)>){
         let mut seen: HashSet<String> = HashSet::new();
 
         tuples.retain(|(_, binary_string, _)| seen.insert(binary_string.clone()));
 
+    }
+
+    fn get_prime_implicants(&mut self) {
+        let mut prime_implicants: Vec<(String, String, Vec<u8>)> = Vec::new();
+
+        for group_table in self.tables.values() {
+            for group in group_table.values() {
+                for combination in group.borrow().iter() {
+                    if !combination.0 {
+                        prime_implicants.push((Self::tanslate_binary_into_variable_letters(&combination.1), combination.1.clone(), combination.2.clone()));
+                    } 
+                }
+            }
+        }
+
+        self.prime_implicants = prime_implicants;
+    }
+
+    fn tanslate_binary_into_variable_letters (binary: &String) -> String {
+        let positive_letters: [char; 8] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        let negative_letters: [&str; 8] = ["A\'", "B\'", "C\'", "D\'" , "E\'", "F\'", "G\'", "H\'"];
+        let mut translation: String = String::new();
+
+        for (i, bit) in binary.chars().enumerate() {
+            if bit == '0' {
+                translation.push_str(negative_letters[i]);
+            }
+
+            if bit == '1' {
+                translation.push(positive_letters[i]);
+            }
+        }
+        return translation;
     }
 }
 
@@ -160,8 +195,15 @@ impl std::fmt::Display for QuineCluskey {
                 }
                 display_table.push_str("-----------------------------\n");
             }
-            display_table.push_str("\n\n\n\n");
+            display_table.push_str("\n\n");
         }
+        
+        display_table.push_str("Prime Implicants\n================\n");
+        for i in 0..self.prime_implicants.len() {
+            display_table.push_str(&format!("PI{} : {}\n", i + 1, &self.prime_implicants[i].0));
+        }
+
+        display_table.push_str("\n\n");
 
         write!(f, "{}", display_table)
     }
