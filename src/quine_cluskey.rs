@@ -17,6 +17,7 @@ Hashmap => the group tables, group_table_u8
 #[derive(Default, Debug)]
 pub struct QuineCluskey {
     pub minterms: Vec<u8>,
+    pub do_not_cares: Option<Vec<u8>>,
     pub tables: HashMap<u8, HashMap<u8, RefCell<Vec<(bool, String, Vec<u8>)>>>>,
     pub prime_implicants: Vec<(String, String, Vec<u8>)>,
     nb_bits_needed: u8,
@@ -27,9 +28,10 @@ impl QuineCluskey {
     /*
     Create and fill the tables based on the minterms in params
      */
-    pub fn new (minterms: Vec<u8>) -> QuineCluskey {
+    pub fn new (minterms: Vec<u8>, do_not_care: Option<Vec<u8>>) -> QuineCluskey {
         let mut default_structure: QuineCluskey = QuineCluskey {
             minterms: minterms,
+            do_not_cares: do_not_care,
             ..Default::default()
         };
 
@@ -45,7 +47,16 @@ impl QuineCluskey {
      */
     fn set_max_bit(&mut self) {
         if let Some(biggest_minterms) = self.minterms.iter().max() {
+            
+            if let Some(biggest_do_not_care) = self.do_not_cares.as_ref().and_then(|vec| vec.iter().max()) {
+                if biggest_do_not_care > biggest_minterms {
+                    self.nb_bits_needed = 8 - biggest_do_not_care.leading_zeros() as u8;
+                    return;
+                }
+            }
+
             self.nb_bits_needed = 8 - biggest_minterms.leading_zeros() as u8;
+
         } else {
             self.nb_bits_needed = 0;
         }
@@ -67,6 +78,14 @@ impl QuineCluskey {
                     for minterm in &self.minterms {
                         if minterm.count_ones() as u8 == group_number {
                             group_combinations.push((false, format!("{:0width$b}", minterm, width=self.nb_bits_needed as usize), vec![*minterm]));
+                        }
+                    }
+
+                    if let Some(do_not_cares) = &self.do_not_cares {
+                        for do_not_care in do_not_cares {
+                            if do_not_care.count_ones() as u8 == group_number {
+                                group_combinations.push((false, format!("{:0width$b}", do_not_care, width=self.nb_bits_needed as usize), vec![*do_not_care]));
+                            }
                         }
                     }
 
