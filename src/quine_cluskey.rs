@@ -75,17 +75,9 @@ impl QuineCluskey {
     
                 // Inital Group table, no combination needed, just split in groups based on number of one in binary representation
                 if group_table_number == 0 {
-                    for minterm in &self.minterms {
-                        if minterm.count_ones() as u8 == group_number {
-                            group_combinations.push((false, format!("{:0width$b}", minterm, width=self.nb_bits_needed as usize), vec![*minterm]));
-                        }
-                    }
-
-                    if let Some(do_not_cares) = &self.do_not_cares {
-                        for do_not_care in do_not_cares {
-                            if do_not_care.count_ones() as u8 == group_number {
-                                group_combinations.push((false, format!("{:0width$b}", do_not_care, width=self.nb_bits_needed as usize), vec![*do_not_care]));
-                            }
+                    for value in self.minterms.iter().chain(self.do_not_cares.as_ref().into_iter().flatten()) {
+                        if value.count_ones() as u8 == group_number {
+                            group_combinations.push((false, format!("{:0width$b}", value, width=self.nb_bits_needed as usize), vec![*value]));
                         }
                     }
 
