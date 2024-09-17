@@ -11,7 +11,6 @@ The goal is for me to learn about programming in Rust so the code may not be opt
 
 
 ### Planned (one day in my life)
-- Finish the Analysis phase with the extraction of prime implicants
 - Do the synthesis phase
 - print result in a file
 
